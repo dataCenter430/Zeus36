@@ -5,7 +5,8 @@ from typing import Any
 
 from fastapi import FastAPI, Body
 
-from agent import handle_act
+from agent import handle_act, auto_learn_task
+from metrics import AgentMetrics
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
@@ -15,6 +16,23 @@ app = FastAPI(title="SN36 Apex Agent", version="2.0")
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/metrics")
+async def metrics():
+    """Return agent observability metrics."""
+    return AgentMetrics().snapshot()
+
+
+@app.post("/learn")
+async def learn(payload: dict[str, Any] = Body(...)):
+    """Externally signal that a task completed successfully, triggering auto-learn."""
+    task_id = payload.get("task_id")
+    success = payload.get("success", True)
+    if not task_id:
+        return {"error": "task_id required"}
+    auto_learn_task(task_id, success=success)
+    return {"status": "ok", "task_id": task_id, "learned": success}
 
 
 @app.post("/act")
