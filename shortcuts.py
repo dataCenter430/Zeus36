@@ -160,7 +160,10 @@ def detect_logout_target(candidates: list[Candidate]) -> list[dict] | None:
     return None
 
 
-def get_registration_actions(candidates: list[Candidate]) -> list[dict] | None:
+def get_registration_actions(
+    candidates: list[Candidate],
+    creds: dict[str, str] | None = None,
+) -> list[dict] | None:
     username = email = password = confirm = submit = None
     password_seen = False
 
@@ -196,14 +199,20 @@ def get_registration_actions(candidates: list[Candidate]) -> list[dict] | None:
     if not username and not email:
         return None
 
+    # Use actual credentials from prompt when available, fall back to placeholders
+    creds = creds or {}
+    uname_val = creds.get("username", "<signup_username>")
+    email_val = creds.get("email", "<signup_email>")
+    pwd_val = creds.get("password", "<signup_password>")
+
     actions: list[dict] = []
     if username:
-        actions.append({"type": "TypeAction", "text": "<signup_username>", "selector": username.selector.model_dump()})
+        actions.append({"type": "TypeAction", "text": uname_val, "selector": username.selector.model_dump()})
     if email:
-        actions.append({"type": "TypeAction", "text": "<signup_email>", "selector": email.selector.model_dump()})
-    actions.append({"type": "TypeAction", "text": "<signup_password>", "selector": password.selector.model_dump()})
+        actions.append({"type": "TypeAction", "text": email_val, "selector": email.selector.model_dump()})
+    actions.append({"type": "TypeAction", "text": pwd_val, "selector": password.selector.model_dump()})
     if confirm:
-        actions.append({"type": "TypeAction", "text": "<signup_password>", "selector": confirm.selector.model_dump()})
+        actions.append({"type": "TypeAction", "text": pwd_val, "selector": confirm.selector.model_dump()})
     actions.append({"type": "ClickAction", "selector": submit.selector.model_dump()})
     return actions
 
@@ -258,6 +267,8 @@ def try_shortcut(
     candidates: list[Candidate],
     soup: BeautifulSoup,
     step_index: int,
+    creds: dict[str, str] | None = None,
+    has_not_constraints: bool = False,
 ) -> list[dict] | None:
     """Attempt deterministic shortcut for the given task type."""
     if task_type is None:
@@ -269,6 +280,10 @@ def try_shortcut(
         return detect_login_fields(candidates)
 
     if task_type == "logout":
+        # If task has NOT constraints on username, defer to LLM
+        # so it can verify which account is logged in before logging out
+        if has_not_constraints:
+            return None
         result = detect_logout_target(candidates)
         if result:
             return result
@@ -280,7 +295,7 @@ def try_shortcut(
         return None
 
     if task_type == "registration":
-        return get_registration_actions(candidates)
+        return get_registration_actions(candidates, creds=creds)
 
     if task_type == "contact":
         return get_contact_actions(candidates)

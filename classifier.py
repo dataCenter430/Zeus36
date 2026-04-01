@@ -41,6 +41,68 @@ def classify_task_type(prompt: str) -> str:
     if re.search(r"next\s+pickup", t, re.IGNORECASE):
         return "NEXT_PICKUP"
 
+    # ---- AutoDiscord (8015) ----
+    if re.search(r"toggle\s+mute", t, re.IGNORECASE):
+        return "TOGGLE_MUTE"
+    if re.search(r"(unmute|un-mute)\s+(in\s+)?the\s+voice", t, re.IGNORECASE):
+        return "TOGGLE_MUTE"
+    if re.search(r"muted?\s+.*voice\s+channel|voice\s+channel.*mute", t, re.IGNORECASE):
+        return "TOGGLE_MUTE"
+    if re.search(r"toggle\s+deafen|deafen\s+in\s+the\s+voice", t, re.IGNORECASE):
+        return "TOGGLE_DEAFEN"
+    if re.search(r"join\s+(a\s+)?voice\s+channel", t, re.IGNORECASE):
+        return "JOIN_VOICE_CHANNEL"
+    if re.search(r"leave\s+(the\s+)?voice\s+channel", t, re.IGNORECASE):
+        return "LEAVE_VOICE_CHANNEL"
+    if re.search(r"send\s+a?\s*message\s+in\s+(the\s+)?channel", t, re.IGNORECASE):
+        return "SEND_CHANNEL_MESSAGE"
+    if re.search(r"create\s+(a\s+)?(new\s+)?channel", t, re.IGNORECASE):
+        return "CREATE_CHANNEL"
+    if re.search(r"delete\s+(the\s+)?channel", t, re.IGNORECASE):
+        return "DELETE_CHANNEL"
+    if re.search(r"create\s+(a\s+)?(new\s+)?server", t, re.IGNORECASE):
+        return "CREATE_SERVER"
+    if re.search(r"(switch|change)\s+to\s+(the\s+)?server", t, re.IGNORECASE):
+        return "SWITCH_SERVER"
+    if re.search(r"(pin|unpin)\s+(a\s+)?message", t, re.IGNORECASE):
+        return "PIN_MESSAGE"
+    if re.search(r"(edit|update)\s+(a\s+)?message\s+in", t, re.IGNORECASE):
+        return "EDIT_MESSAGE"
+    if re.search(r"delete\s+(a\s+)?message\s+in", t, re.IGNORECASE):
+        return "DELETE_MESSAGE"
+    if re.search(r"react\s+to\s+(a\s+)?message|add\s+(a\s+)?reaction", t, re.IGNORECASE):
+        return "REACT_MESSAGE"
+    if re.search(r"search\s+(for\s+)?(a\s+)?user", t, re.IGNORECASE):
+        return "SEARCH_USER"
+    if re.search(r"(invite|add)\s+(a\s+)?user\s+to", t, re.IGNORECASE):
+        return "INVITE_USER"
+    if re.search(r"change\s+(the\s+)?nickname", t, re.IGNORECASE):
+        return "CHANGE_NICKNAME"
+    if re.search(r"(open|view)\s+(the\s+)?server\s+settings", t, re.IGNORECASE):
+        return "SERVER_SETTINGS"
+    if re.search(r"(switch|go)\s+to\s+(the\s+)?#?\w+\s+channel", t, re.IGNORECASE):
+        return "SWITCH_CHANNEL"
+
+    # ---- AutoStats (8014) ----
+    if re.search(r"favorite\s+(the\s+)?subnet", t, re.IGNORECASE):
+        return "FAVORITE_SUBNET"
+    if re.search(r"unfavorite\s+(the\s+)?subnet", t, re.IGNORECASE):
+        return "UNFAVORITE_SUBNET"
+    if re.search(r"(view|show|open)\s+(the\s+)?subnet\s+details", t, re.IGNORECASE):
+        return "VIEW_SUBNET_DETAILS"
+    if re.search(r"(filter|search)\s+subnets?\s+where", t, re.IGNORECASE):
+        return "FILTER_SUBNET"
+    if re.search(r"(view|show|open)\s+(the\s+)?validator\s+details", t, re.IGNORECASE):
+        return "VIEW_VALIDATOR_DETAILS"
+    if re.search(r"(view|show|open)\s+(the\s+)?miner\s+details", t, re.IGNORECASE):
+        return "VIEW_MINER_DETAILS"
+    if re.search(r"(select|change|switch)\s+(the\s+)?date\s+range", t, re.IGNORECASE):
+        return "SELECT_DATE_RANGE"
+    if re.search(r"(export|download)\s+(the\s+)?data", t, re.IGNORECASE):
+        return "EXPORT_DATA"
+    if re.search(r"(view|show|open)\s+(the\s+)?dashboard", t, re.IGNORECASE):
+        return "VIEW_DASHBOARD"
+
     # ---- AutoMail (8005) ----
     if re.search(r"mark\s+as\s+spam", t, re.IGNORECASE):
         return "MARK_AS_SPAM"

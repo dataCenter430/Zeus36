@@ -183,8 +183,27 @@ async def handle_act(
     if state.task_type.startswith("LOGIN_THEN_") and not state.login_done:
         shortcut_type = "login"
 
+    # Pre-compute credentials early so shortcuts can use them
+    _creds = extract_credentials(prompt)
+    if relevant_data and isinstance(relevant_data, dict):
+        for k, v in relevant_data.items():
+            if isinstance(v, str) and v:
+                _creds.setdefault(str(k), str(v))
+    # Add all "equals" constraints as directly usable field values
+    for c in state.constraints:
+        if c.operator == "equals" and isinstance(c.value, str):
+            _creds.setdefault(c.field, c.value)
+
+    _has_not_constraints = any(
+        c.operator in ("not_equals", "not_contains", "not_in")
+        for c in state.constraints
+    )
+
     if shortcut_type and soup and candidates:
-        shortcut_actions = try_shortcut(shortcut_type, candidates, soup, step)
+        shortcut_actions = try_shortcut(
+            shortcut_type, candidates, soup, step,
+            creds=_creds, has_not_constraints=_has_not_constraints,
+        )
         if shortcut_actions is not None:
             logger.info(f"Shortcut '{shortcut_type}': {len(shortcut_actions)} actions")
             _record_actions(task, shortcut_actions, url, step)
@@ -231,17 +250,17 @@ async def handle_act(
         page_summary = (soup.get_text(separator=" ", strip=True) or "")[:400]
     state_delta = StateTracker.compute_state_delta(task, url, page_summary, candidates)
 
-    # Cards preview for early steps
+    # Cards preview (all steps — prompt layer caps length for later steps)
     cards_preview = ""
-    if step <= 2:
-        try:
-            cards_obj = tool_list_cards(candidates=candidates, max_cards=6, max_text=120)
-            if cards_obj.get("ok") and cards_obj.get("cards"):
-                cards_preview = json.dumps(cards_obj["cards"], ensure_ascii=True)
-                if len(cards_preview) > 600:
-                    cards_preview = cards_preview[:597] + "..."
-        except Exception:
-            cards_preview = ""
+    try:
+        max_cards = 6 if step <= 2 else 4
+        cards_obj = tool_list_cards(candidates=candidates, max_cards=max_cards, max_text=120)
+        if cards_obj.get("ok") and cards_obj.get("cards"):
+            cards_preview = json.dumps(cards_obj["cards"], ensure_ascii=True)
+            if len(cards_preview) > 600:
+                cards_preview = cards_preview[:597] + "..."
+    except Exception:
+        cards_preview = ""
 
     # Extra stuck hint from repeat detection
     extra_hint = ""
@@ -259,17 +278,8 @@ async def handle_act(
     website_hint = WEBSITE_HINTS.get(website, "") if website else ""
     playbook = TASK_PLAYBOOKS.get(state.task_type, TASK_PLAYBOOKS.get("GENERAL", ""))
 
-    # Credential info - enhanced: also add equals constraints as credential values
-    creds = extract_credentials(prompt)
-    # Add relevant_data credentials
-    if relevant_data and isinstance(relevant_data, dict):
-        for k, v in relevant_data.items():
-            if isinstance(v, str) and v:
-                creds.setdefault(str(k), str(v))
-    # Add all "equals" constraints as directly usable field values
-    for c in state.constraints:
-        if c.operator == "equals" and isinstance(c.value, str):
-            creds.setdefault(c.field, c.value)
+    # Reuse credentials computed earlier (before shortcuts)
+    creds = _creds
 
     creds_block = ""
     if creds:

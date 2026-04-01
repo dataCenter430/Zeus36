@@ -195,12 +195,28 @@ WEBSITE_HINTS: dict[str, str] = {
         "Contact doctor form: opens when Contact button clicked on doctor card."
     ),
     "autostats": (
-        "Analytics dashboard. Charts, data tables, filter controls, export options. "
-        "Date range selectors, metric dropdowns."
+        "SITE: Bittensor network analytics dashboard. NAV: Subnets list, Validators, Miners, Dashboard. "
+        "Subnet cards/rows: subnet_name, subnet_id, description, emission, registration_cost, validators, miners. "
+        "Subnet actions: Favorite/Unfavorite (star/heart icon on card), View Details. "
+        "Favorite: click the star/heart icon on a subnet card to toggle favorite. "
+        "Filters: search bar for subnet name, filter controls for metrics. "
+        "Validator/Miner detail: name, stake, rank, trust, emission. "
+        "Date range selector, metric dropdowns, chart views. "
+        "Export: download/export button for data tables."
     ),
     "autodiscord": (
-        "Chat application. Server list, channels, messages, user search, "
-        "server management. Channel messages in main panel."
+        "SITE: Discord-style chat application. LEFT SIDEBAR: server list (icons), channel list per server. "
+        "Channel types: text channels (#), voice channels (speaker icon). "
+        "Voice channel: Join button, Mute/Unmute toggle button, Deafen/Undeafen toggle button. "
+        "Mute button: microphone icon in voice controls bar at bottom of channel sidebar or in voice panel. "
+        "When muted, mute icon shows slash-through; click to unmute (set muted=False). "
+        "When unmuted, click to mute (set muted=True). "
+        "MAIN PANEL: message list with author, timestamp, content. "
+        "Message actions: Edit, Delete, Pin, React (emoji picker). "
+        "Message input: text field at bottom of main panel. "
+        "Server management: server name dropdown -> Server Settings. "
+        "User search: search bar in member list or top bar. "
+        "Channel actions: Create Channel (+), Delete Channel, Edit Channel in server settings."
     ),
 }
 
@@ -240,7 +256,7 @@ TASK_PLAYBOOKS: dict[str, str] = {
     "CANCEL_RESERVATION": "PLAYBOOK: 1) Navigate to reservations/upcoming rides page. 2) Find the reservation matching ALL TASK_CONSTRAINTS. 3) Click Cancel. 4) Confirm if prompted.",
     "SELECT_DATE": "PLAYBOOK: 1) Find the date picker/calendar widget. 2) Click it to open. 3) Select a date satisfying TASK_CONSTRAINTS. 4) Confirm the selection.",
     "SELECT_TIME": "PLAYBOOK: 1) Find the time picker/dropdown. 2) Click to open. 3) Select a time satisfying the constraint. 4) Confirm.",
-    "NEXT_PICKUP": "PLAYBOOK: 1) Look for a Next Pickup or scheduled ride section. 2) Find the pickup satisfying date/time constraints. 3) Click to view details.",
+    "NEXT_PICKUP": "PLAYBOOK: 1) Look for Next Pickup or scheduled rides section. 2) Use list_cards to see all pickups. 3) Compare each card's date/time against CONSTRAINTS (<=, >= etc). 4) Click Show Details on the matching pickup.",
     "STAR_AN_EMAIL": "PLAYBOOK: 1) Browse the inbox email list. 2) Find the email matching ALL constraints. 3) Click the Star icon on that email row.",
     "ARCHIVE_EMAIL": "PLAYBOOK: 1) Browse the inbox. 2) Find email matching constraints. 3) Click on that email. 4) Find Archive button. Click it.",
     "DELETE_EMAIL": "PLAYBOOK: 1) Find the email matching constraints. 2) Click the Delete/Trash icon on that email row.",
@@ -423,7 +439,7 @@ TASK_PLAYBOOKS: dict[str, str] = {
     "REVIEW_SUBMITTED": "PLAYBOOK: 1) Find restaurant matching constraints. 2) Open it. 3) Find Write Review button. 4) Fill rating and review text. 5) Submit.",
     "BACK_TO_ALL_RESTAURANTS": "PLAYBOOK: 1) Navigate to restaurant matching constraints. 2) Open detail page. 3) Find Back button. 4) Click it.",
     "ADDRESS_ADDED": "PLAYBOOK: 1) Find delivery address section. 2) Click Add Address. 3) Type exact address. 4) Fill additional fields. 5) Save.",
-    "SHARE_HOTEL": "PLAYBOOK: 1) Find hotel matching ALL constraints. 2) Click to open. 3) Find Share button. 4) Enter recipient email. 5) Send.",
+    "SHARE_HOTEL": "PLAYBOOK: 1) Use list_cards to see hotels. 2) Check each card against ALL CONSTRAINTS - skip any card failing a constraint. 3) Click matching hotel. 4) Find Share button. 5) If email field appears, type email from constraints. 6) Send.",
     "POPULAR_HOTELS_VIEWED": "PLAYBOOK: 1) Find Popular Hotels section. 2) Apply rating filter if available. 3) Click to view.",
     "TRIP_DETAILS": "PLAYBOOK: 1) View trips list. 2) Find trip matching ALL constraints. 3) Click to view details.",
     "SELECT_CAR": "PLAYBOOK: 1) Find ride matching constraints. 2) Click to open. 3) Select car option.",
@@ -440,7 +456,36 @@ TASK_PLAYBOOKS: dict[str, str] = {
     "EDIT_TASK": "PLAYBOOK: 1) Find task matching constraints. 2) Click Edit. 3) Update fields. 4) Save.",
     "COMPLETE_TASK": "PLAYBOOK: 1) Find task matching constraints. 2) Click Complete/Done/Checkmark.",
     "JOB_POSTING": "PLAYBOOK: 1) Find Post a Job button. 2) Click it. 3) Type EXACT job title. 4) Submit.",
-    "GENERAL": "PLAYBOOK: Analyze the task carefully, identify the key action required, and execute the most direct path. Use TASK_CONSTRAINTS to find the correct item and fill forms.",
+    # ---- AutoDiscord playbooks ----
+    "TOGGLE_MUTE": "PLAYBOOK: 1) Look for voice channel controls at bottom of sidebar or voice panel. 2) Find the Mute/Unmute button (microphone icon). 3) Click it to toggle mute state. If task says muted='False', ensure you UNMUTE (click mute button when currently muted).",
+    "TOGGLE_DEAFEN": "PLAYBOOK: 1) Find voice controls. 2) Find Deafen button (headphone icon). 3) Click to toggle.",
+    "JOIN_VOICE_CHANNEL": "PLAYBOOK: 1) Find voice channel in channel list (speaker icon). 2) Click on the voice channel name to join.",
+    "LEAVE_VOICE_CHANNEL": "PLAYBOOK: 1) Find Disconnect button in voice controls. 2) Click it.",
+    "SEND_CHANNEL_MESSAGE": "PLAYBOOK: 1) Navigate to the correct channel. 2) Find message input at bottom. 3) Type message. 4) Submit (Enter or Send).",
+    "CREATE_CHANNEL": "PLAYBOOK: 1) Find + button next to channel category. 2) Click it. 3) Fill channel name. 4) Select type (text/voice). 5) Create.",
+    "DELETE_CHANNEL": "PLAYBOOK: 1) Find channel matching constraints. 2) Right-click or open settings. 3) Delete Channel. 4) Confirm.",
+    "CREATE_SERVER": "PLAYBOOK: 1) Find + button in server list. 2) Click Create Server. 3) Fill server name. 4) Create.",
+    "SWITCH_SERVER": "PLAYBOOK: 1) Find server icon in left sidebar. 2) Click on it.",
+    "SWITCH_CHANNEL": "PLAYBOOK: 1) Find channel matching constraints in channel list. 2) Click on it.",
+    "PIN_MESSAGE": "PLAYBOOK: 1) Find message matching constraints. 2) Hover or right-click. 3) Click Pin/Unpin.",
+    "EDIT_MESSAGE": "PLAYBOOK: 1) Find message matching constraints. 2) Click Edit. 3) Modify text. 4) Save.",
+    "DELETE_MESSAGE": "PLAYBOOK: 1) Find message matching constraints. 2) Click Delete. 3) Confirm.",
+    "REACT_MESSAGE": "PLAYBOOK: 1) Find message matching constraints. 2) Click Add Reaction. 3) Select emoji. 4) Confirm.",
+    "SEARCH_USER": "PLAYBOOK: 1) Find user search in member list or top bar. 2) Type search query. 3) Submit.",
+    "INVITE_USER": "PLAYBOOK: 1) Find Invite button or member settings. 2) Enter username/email. 3) Send invite.",
+    "CHANGE_NICKNAME": "PLAYBOOK: 1) Find profile or server settings. 2) Find nickname field. 3) Change to value satisfying constraints. 4) Save.",
+    "SERVER_SETTINGS": "PLAYBOOK: 1) Click server name dropdown. 2) Click Server Settings.",
+    # ---- AutoStats playbooks ----
+    "FAVORITE_SUBNET": "PLAYBOOK: 1) Use list_cards to see subnets. 2) Check each card against ALL CONSTRAINTS - for NOT constraints skip that card. 3) Click the Favorite/Star/Heart icon on the matching subnet card.",
+    "UNFAVORITE_SUBNET": "PLAYBOOK: 1) Browse subnet list. 2) Find subnet matching constraints. 3) Click to unfavorite (toggle star/heart off).",
+    "VIEW_SUBNET_DETAILS": "PLAYBOOK: 1) Browse subnet list. 2) Find subnet matching constraints. 3) Click to view details.",
+    "FILTER_SUBNET": "PLAYBOOK: 1) Find search/filter controls. 2) Apply filters satisfying constraints. 3) View results.",
+    "VIEW_VALIDATOR_DETAILS": "PLAYBOOK: 1) Navigate to Validators section. 2) Find validator matching constraints. 3) Click to view.",
+    "VIEW_MINER_DETAILS": "PLAYBOOK: 1) Navigate to Miners section. 2) Find miner matching constraints. 3) Click to view.",
+    "SELECT_DATE_RANGE": "PLAYBOOK: 1) Find date range selector. 2) Set range satisfying constraints. 3) Apply.",
+    "EXPORT_DATA": "PLAYBOOK: 1) Find Export/Download button. 2) Click it. 3) Select format if prompted.",
+    "VIEW_DASHBOARD": "PLAYBOOK: 1) Find Dashboard link in navigation. 2) Click it.",
+    "GENERAL": "PLAYBOOK: 1) Read CONSTRAINTS carefully. 2) If items/cards are visible, use list_cards to find the one matching ALL constraints. 3) For NOT constraints, skip that item and pick another. 4) For forms, fill fields with EXACT values from CREDENTIALS. 5) Take the most direct action.",
 }
 
 # ---------------------------------------------------------------------------
